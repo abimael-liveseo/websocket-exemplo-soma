@@ -1,0 +1,64 @@
+<html>
+  <head>
+
+  </head>
+  <body>
+    <div id="texts"><br/></div>
+    <input type="text" id="input1" />
+    <input type="text" id="input2" />
+
+    <button onclick='socket.send("subtrai|" + input1.value + "|" + input2.value)'>subtrai</button>
+    <button onclick='socket.send("soma|" + input1.value + "|" + input2.value)'>soma</button>
+    
+    <script>
+  
+        let input1 = document.getElementById('input1');
+        let input2 = document.getElementById('input2');
+        let texts = document.getElementById('texts');
+
+        // eventos de teclado
+        function executa(e){
+            if (e.key === 'Enter' && !e.shiftKey) {
+                socket.send("soma|" + input1.value + "|" + input2.value);
+            }
+            if (e.ctrlKey) {
+                socket.send("subtrai" + input1.value + "|" + input2.value);
+            }
+        }
+        input1.addEventListener('keypress', executa);
+        input2.addEventListener('keypress', executa);
+
+        // websocket:
+        let socket = new WebSocket(
+            'ws://localhost:3010/'
+        );
+
+        socket.onopen = function (e) {
+            console.log('Conexão aberta');
+            socket.send('Oi, eu me conectei');
+        };
+
+        socket.onmessage = function (event) {
+            console.log(`[message] Data received from server: ${event.data}`);
+            texts.innerHTML = event.data;
+        };
+
+        socket.onclose = function (event) {
+            if (event.wasClean) {
+            console.log(
+                `[close] Connection closed cleanly, code=${event.code} reason=${event.reason}`
+            );
+            } else {
+            // e.g. server process killed or network down
+            // event.code is usually 1006 in this case
+            console.log('[close] Connection died');
+            }
+        };
+
+        socket.onerror = function (error) {
+            console.error(`[error] ${error.message}`);
+        };
+        
+    </script>
+  </body>
+</html>
